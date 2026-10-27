@@ -25,7 +25,7 @@ cargo test -p ibe-sim
 cd crates/wasm && wasm-pack build --target web --release --out-dir ../../web/src/wasm
 
 # ui
-cd ../../web && npm install && npm run dev
+cd ../../web && pnpm install && pnpm dev
 ```
 
 ## Architecture rules
