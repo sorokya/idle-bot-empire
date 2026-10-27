@@ -38,9 +38,7 @@ pub fn decide(g: &mut Game) {
     for (id, heat, paused) in &snapshot {
         if *heat >= 92.0 {
             let _ = g.dispatch(&format!("burn:{id}"));
-        } else if *heat >= 78.0 && !*paused {
-            let _ = g.dispatch(&format!("pause:{id}"));
-        } else if *paused && *heat < 30.0 {
+        } else if (*heat >= 78.0 && !*paused) || (*paused && *heat < 30.0) {
             let _ = g.dispatch(&format!("pause:{id}"));
         }
     }
