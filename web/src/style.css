@@ -178,10 +178,6 @@ body::after {
   cursor: not-allowed;
   background: #060c0e;
 }
-.cmd:disabled .cost {
-  color: var(--dimmer);
-}
-
 .cmd .key {
   color: var(--accent);
   border: 1px solid var(--line);
@@ -200,6 +196,10 @@ body::after {
   margin-left: auto;
   color: var(--money);
   font-variant-numeric: tabular-nums;
+}
+
+.cmd:disabled .cost {
+  color: var(--dimmer);
 }
 
 .section {

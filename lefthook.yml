@@ -1,0 +1,17 @@
+# Refer for explanation to following link:
+#   https://lefthook.dev/configuration/
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: cargo fmt
+      run: cargo fmt --all -- --check
+
+    - name: pnpm lint
+      root: web/
+      run: pnpm lint
+
+pre-push:
+  jobs:
+    - name: cargo clippy
+      run: cargo clippy --workspace --all-targets
