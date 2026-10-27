@@ -98,6 +98,7 @@ pub struct Prestige {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Start {
     pub cash: f64,
+    pub manual_click: f64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

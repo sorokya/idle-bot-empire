@@ -21,11 +21,11 @@ impl Game {
         let mut g = Self { state, balance };
         g.state.push_log(
             LogKind::System,
-            "Operation online. One account, one script, no plan.",
+            "Day one. No bots, no script, no plan. Just you and a mouse.",
         );
         g.state.push_log(
             LogKind::Info,
-            "Sell gold to buy accounts. Accounts make heat. Heat makes problems.",
+            "Farm by hand until you can afford a script. Then never do this again.",
         );
         g
     }
@@ -137,7 +137,7 @@ impl Game {
 
         // Never a dead end: you always have one personal account to rebuild from.
         // That is the pressure valve that keeps a wipe from bricking a save.
-        if self.state.accounts.is_empty() && !self.state.over {
+        if self.state.accounts.is_empty() && self.state.started && !self.state.over {
             let id = self.state.add_account(now);
             events.push((
                 LogKind::System,
@@ -297,6 +297,7 @@ impl Game {
         match verb {
             "buy_account" => self.buy_account(),
             "buy_slot" => self.buy_slot(),
+            "click" => self.farm_by_hand(),
             "sell" => self.sell(),
             "upgrade" => match arg.unwrap_or("") {
                 "script" => self.buy_script(),
@@ -373,10 +374,21 @@ impl Game {
         self.spend(cost, "Account")?;
         let now = self.state.now;
         let id = self.state.add_account(now);
-        self.state.push_log(
-            LogKind::Money,
-            format!("{} acquired for ${}. Welcome aboard.", tag(id), money(cost)),
-        );
+        if !self.state.started {
+            self.state.started = true;
+            self.state.push_log(
+                LogKind::System,
+                format!(
+                    "{} runs the script now. It farms while you sleep, which is the entire point.",
+                    tag(id)
+                ),
+            );
+        } else {
+            self.state.push_log(
+                LogKind::Money,
+                format!("{} acquired for ${}. Welcome aboard.", tag(id), money(cost)),
+            );
+        }
         Ok(())
     }
 
@@ -443,6 +455,27 @@ impl Game {
             ),
         );
         Ok(())
+    }
+
+    fn farm_by_hand(&mut self) -> Result<(), String> {
+        self.require_running()?;
+        let gain = self.balance.start.manual_click;
+        let before = self.state.gold;
+        self.state.gold += gain;
+        // Manual play is slow, honest labour: no heat, and no log spam.
+        let need = self.first_bot_gold();
+        if !self.state.started && before < need && self.state.gold >= need {
+            self.state.push_log(
+                LogKind::Money,
+                "That is enough for a script. Sell the gold, buy the bot, get your evenings back.",
+            );
+        }
+        Ok(())
+    }
+
+    /// Gold needed to afford the first bot, in staging currency.
+    pub fn first_bot_gold(&self) -> f64 {
+        self.account_cost() / self.state.market_price.max(0.0001)
     }
 
     fn sell(&mut self) -> Result<(), String> {
@@ -552,6 +585,7 @@ impl Game {
         s.over = false;
         s.sweep_pending = false;
         s.run_started_at = s.now;
+        s.started = true;
         s.add_account(s.now);
         s.push_log(
             LogKind::Info,

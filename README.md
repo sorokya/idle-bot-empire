@@ -9,7 +9,7 @@ Design doc: `~/vault/20. Goals & Projects/Projects/Idle Bot Empire.md`
 crates/sim/     # the game. No I/O, no clock, no unseeded randomness.
   balance.toml  # every tunable number
 crates/wasm/    # wasm-bindgen boundary (~60 lines)
-web/            # Vite + TypeScript. Dumb view layer.
+web/            # Vite + Preact + TypeScript. Dumb view layer.
 ```
 
 ## Run it
@@ -39,10 +39,16 @@ cd ../../web && pnpm install && pnpm dev
 
 ## Controls
 
-`1`–`6` buy · `[` `]` aggression · `p` new identity · click an account to pause or burn.
+Manual phase: `1` farm by hand · `2` sell · `3` buy your first bot.
+After that: `1`–`6` buy · `[` `]` aggression · `p` new identity · click an account to pause or burn.
+
+## Workflow
+
+`cargo fmt --all` and `pnpm lint` run on pre-commit; `cargo clippy --workspace --all-targets -- -D warnings`
+runs on pre-push (lefthook). CI mirrors all three plus `cargo test` and the wasm build.
 
 ## Where the design doc and the code disagree
 
-The slice deliberately ships less than the doc: one zone, one shard, no manual
-clicking phase, no laundry, no buyers, no rivals. It does ship the part that
-matters — heat, sweeps, and Contacts.
+The slice deliberately ships less than the doc: one zone, one shard, no laundry,
+no buyers, no rivals. It does ship the part that matters — the manual-to-automation
+opening, heat, sweeps, and Contacts.

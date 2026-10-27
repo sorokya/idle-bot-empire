@@ -387,6 +387,95 @@ body::after {
   letter-spacing: 0.1em;
 }
 
+/* --- manual phase --- */
+
+.muted,
+.acct.muted {
+  color: var(--dimmer);
+}
+
+.manual {
+  padding: 12px 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.manual-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  background: #0b1512;
+  border: 1px solid var(--accent);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.manual-btn:hover {
+  background: #10201a;
+}
+.manual-btn .key {
+  color: var(--accent);
+  border: 1px solid var(--line);
+  padding: 0 5px;
+  font-size: 11px;
+  min-width: 20px;
+  text-align: center;
+}
+.manual-btn .label {
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+}
+.manual-btn .cost {
+  margin-left: auto;
+  color: var(--money);
+  font-variant-numeric: tabular-nums;
+}
+
+.manual-progress .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+}
+
+.hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--dimmer);
+}
+
+/* --- sweep / terminal modals --- */
+
+.modal.warn {
+  border-color: var(--warn);
+}
+.modal.warn h3 {
+  color: var(--warn);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.modal button.money {
+  border-color: var(--money);
+  color: var(--money);
+}
+.modal button.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.modal button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 @media (max-width: 620px) {
   .stats {
     grid-template-columns: 1fr 1fr;

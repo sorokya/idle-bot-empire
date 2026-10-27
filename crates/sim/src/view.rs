@@ -14,6 +14,8 @@ pub struct ViewModel {
     pub gold: f64,
     pub gold_per_hr: f64,
     pub cash: f64,
+    /// What "sell all" would pay right now, dump penalty included.
+    pub sell_proceeds: f64,
 
     pub accounts: Vec<AccountView>,
     pub active: u32,
@@ -39,6 +41,11 @@ pub struct ViewModel {
 
     pub over: bool,
     pub sweep_pending: bool,
+    /// False during the manual phase (before the first bot).
+    pub started: bool,
+    pub click_gold: f64,
+    /// Staging gold needed to afford the first bot.
+    pub first_bot_gold: f64,
     pub log: Vec<LogView>,
 }
 
@@ -65,6 +72,7 @@ pub struct Costs {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct LogView {
+    pub seq: u64,
     pub clock: String,
     pub kind: LogKind,
     pub text: String,
@@ -120,9 +128,10 @@ impl ViewModel {
             .log
             .iter()
             .rev()
-            .take(14)
+            .take(60)
             .rev()
             .map(|e| LogView {
+                seq: e.seq,
                 clock: clock_of(e.at),
                 kind: e.kind,
                 text: e.text.clone(),
@@ -138,6 +147,10 @@ impl ViewModel {
             offline_secs: s.last_offline_secs,
             gold: s.gold,
             gold_per_hr,
+            sell_proceeds: {
+                let hit = (s.gold / bal.market.shard_turnover).min(1.0) * bal.market.dump_hit;
+                s.gold * s.market_price * (1.0 - hit)
+            },
             cash: s.cash,
             accounts,
             active: s.active_accounts() as u32,
@@ -170,6 +183,11 @@ impl ViewModel {
             banned_total: s.banned_total,
             over: s.over,
             sweep_pending: s.sweep_pending,
+            started: s.started,
+            click_gold: bal.start.manual_click,
+            first_bot_gold: (bal.accounts.cost
+                * bal.accounts.cost_growth.powi(s.accounts.len() as i32))
+                / s.market_price.max(0.0001),
             log,
         }
     }

@@ -54,7 +54,7 @@ fn offline_time_accrues_but_is_capped() {
 
 #[test]
 fn heat_rises_and_bans_are_possible() {
-    let mut g = Game::new(11);
+    let mut g = started(11);
     g.tick(3600.0);
     let heat = g.state.accounts[0].heat;
     assert!(heat > 5.0, "account should accumulate heat, got {heat}");
@@ -62,7 +62,7 @@ fn heat_rises_and_bans_are_possible() {
 
 #[test]
 fn sweep_ends_run_and_prestige_advances_tier() {
-    let mut g = Game::new(3);
+    let mut g = started(3);
     // Run hot with small numbers until the ceiling trips.
     g.state.aggression = 2.0;
     let mut guard = 0;
@@ -85,6 +85,44 @@ fn sweep_ends_run_and_prestige_advances_tier() {
     assert!(!g.state.over);
     assert_eq!(g.state.accounts.len(), 1);
     assert_eq!(g.state.exposure, 0.0);
+}
+
+/// A game past the manual phase, with one bot running.
+fn started(seed: u64) -> Game {
+    let mut g = Game::new(seed);
+    g.dispatch("buy_account").expect("first bot");
+    g
+}
+
+#[test]
+fn new_game_starts_in_the_manual_phase() {
+    let g = Game::new(1);
+    assert!(!g.state.started, "should start unstarted");
+    assert_eq!(g.state.accounts.len(), 0, "no bots on day one");
+    assert_eq!(g.view().gold_per_hr, 0.0);
+}
+
+#[test]
+fn clicking_funds_the_first_bot() {
+    let mut g = Game::new(1);
+    let need = g.first_bot_gold();
+    assert!(need > 0.0);
+
+    let mut clicks = 0;
+    while g.state.gold < need && clicks < 1000 {
+        g.dispatch("click").expect("click");
+        clicks += 1;
+    }
+    assert!(
+        clicks < 60,
+        "first bot should need < 60 clicks, took {clicks}"
+    );
+
+    g.dispatch("sell").expect("sell");
+    g.dispatch("buy_account").expect("buy");
+    assert!(g.state.started);
+    assert_eq!(g.state.accounts.len(), 1);
+    assert!(g.view().gold_per_hr > 0.0);
 }
 
 #[test]

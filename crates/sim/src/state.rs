@@ -32,6 +32,10 @@ pub enum LogKind {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LogEntry {
+    /// Monotonic id. Stable across pushes, so the UI can key log rows and
+    /// keep the scroll position instead of rebuilding the list every tick.
+    #[serde(default)]
+    pub seq: u64,
     pub at: f64,
     pub kind: LogKind,
     pub text: String,
@@ -93,11 +97,16 @@ pub struct State {
     pub sweep_pending: bool,
 
     pub log: Vec<LogEntry>,
+    #[serde(default)]
+    pub next_log_seq: u64,
+    /// False until the first bot is bought: the manual phase.
+    #[serde(default)]
+    pub started: bool,
 }
 
 impl State {
     pub fn new(seed: u64, price: f64, base_slots: u32, start_cash: f64) -> Self {
-        let mut s = Self {
+        Self {
             version: crate::SAVE_VERSION,
             rng: Pcg32::new(seed),
             now: 0.0,
@@ -125,9 +134,9 @@ impl State {
             over: false,
             sweep_pending: false,
             log: Vec::new(),
-        };
-        s.add_account(0.0);
-        s
+            next_log_seq: 1,
+            started: false,
+        }
     }
 
     pub fn add_account(&mut self, at: f64) -> u32 {
@@ -158,7 +167,10 @@ impl State {
     }
 
     pub fn push_log(&mut self, kind: LogKind, text: impl Into<String>) {
+        let seq = self.next_log_seq;
+        self.next_log_seq += 1;
         self.log.push(LogEntry {
+            seq,
             at: self.now,
             kind,
             text: text.into(),

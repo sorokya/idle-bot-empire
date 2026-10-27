@@ -68,6 +68,7 @@ run_floor_secs = 2700.0
 
 [start]
 cash = 50.0                   # seed money so the first purchase is immediate
+manual_click = 600.0         # gold per hand-farmed click (first bot needs ~19)
 
 [offline]
 cap_secs = 43200.0           # 12h at full rate

@@ -19,6 +19,19 @@ pub fn decide(g: &mut Game) {
     if g.state.over {
         return;
     }
+
+    // Manual phase: click until a bot is affordable, then automate.
+    if !g.state.started {
+        let need = g.first_bot_gold();
+        let mut guard = 0;
+        while g.state.gold < need && guard < 500 {
+            let _ = g.dispatch("click");
+            guard += 1;
+        }
+        let _ = g.dispatch("sell");
+        let _ = g.dispatch("buy_account");
+        return;
+    }
     // A queued sweep is a decision: liquidate, then take the hit.
     if g.state.sweep_pending {
         if g.state.gold >= 1.0 {
