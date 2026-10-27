@@ -38,7 +38,10 @@ fn offline_time_accrues_but_is_capped() {
 
     // 12h later: full catch-up, which here means the run sweeps and ends.
     let g2 = Game::load(&json, 1_000.0 + 43_200.0).unwrap();
-    assert!((g2.state.now - 43_200.0).abs() < 1.0, "should have advanced 12h");
+    assert!(
+        (g2.state.now - 43_200.0).abs() < 1.0,
+        "should have advanced 12h"
+    );
 
     // 48h later: still capped at 12h of simulation, not 4x.
     let g3 = Game::load(&json, 1_000.0 + 172_800.0).unwrap();
@@ -67,7 +70,10 @@ fn sweep_ends_run_and_prestige_advances_tier() {
         g.tick(60.0);
         guard += 1;
     }
-    assert!(g.state.sweep_pending, "exposure ceiling should queue a sweep");
+    assert!(
+        g.state.sweep_pending,
+        "exposure ceiling should queue a sweep"
+    );
     assert!(!g.state.over, "the sweep must wait for the player");
 
     g.dispatch("face_sweep").expect("face the sweep");
@@ -85,5 +91,8 @@ fn sweep_ends_run_and_prestige_advances_tier() {
 fn early_prestige_is_blocked_by_run_floor() {
     let mut g = Game::new(3);
     g.tick(600.0);
-    assert!(g.prestige().is_err(), "cannot prestige in the first 45 minutes");
+    assert!(
+        g.prestige().is_err(),
+        "cannot prestige in the first 45 minutes"
+    );
 }

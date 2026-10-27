@@ -11,7 +11,10 @@ fn first_run_ends_in_a_reasonable_window() {
     let played = harness::autoplay(&mut g, 8.0 * 3600.0);
     let hrs = played / 3600.0;
 
-    assert!(g.state.over, "first run should end within 8h, played {hrs:.2}h");
+    assert!(
+        g.state.over,
+        "first run should end within 8h, played {hrs:.2}h"
+    );
     assert!(
         (2.0..=5.0).contains(&hrs),
         "first run should land in 2-5h, took {hrs:.2}h"
@@ -23,8 +26,14 @@ fn first_prestige_pays_a_meaningful_amount() {
     let mut g = Game::new(7);
     harness::autoplay(&mut g, 8.0 * 3600.0);
     let gain = contacts_preview(&g.state, &g.balance);
-    assert!(gain >= 2, "first run should pay at least 2 contacts, paid {gain}");
-    assert!(gain <= 40, "first run paid too much ({gain}) — curve too generous");
+    assert!(
+        gain >= 2,
+        "first run should pay at least 2 contacts, paid {gain}"
+    );
+    assert!(
+        gain <= 40,
+        "first run paid too much ({gain}) — curve too generous"
+    );
 }
 
 #[test]
@@ -44,7 +53,9 @@ fn run_two_is_faster_than_run_one() {
     assert!(
         g.state.over,
         "run two should end within 8h (tier {}, exposure {:.0}/{:.0})",
-        g.state.tier, g.state.exposure, g.balance.exposure_ceiling(g.state.tier)
+        g.state.tier,
+        g.state.exposure,
+        g.balance.exposure_ceiling(g.state.tier)
     );
     assert_eq!(g.state.tier, 1, "exactly one prestige should have happened");
     assert!(

@@ -36,11 +36,16 @@ fn main() {
     println!("played        {:.2}h", played / 3600.0);
     println!("accounts      {} / {} slots", v.accounts.len(), v.capacity);
     println!("gold staged   {:.0}", v.gold);
-    println!("cash          ${:.2}  (run total ${:.2})", v.cash, g.state.run_cash);
+    println!(
+        "cash          ${:.2}  (run total ${:.2})",
+        v.cash, g.state.run_cash
+    );
     println!("exposure      {:.0} / {:.0}", v.exposure, v.ceiling);
     println!(
         "tier {}  contacts {}  pending {}",
-        v.tier, v.contacts, contacts_preview(&g.state, &g.balance)
+        v.tier,
+        v.contacts,
+        contacts_preview(&g.state, &g.balance)
     );
     println!("banned total  {}", v.banned_total);
     println!("run over      {}", v.over);
@@ -52,5 +57,9 @@ fn day(secs: f64) -> u32 {
 
 fn hhmm(secs: f64) -> String {
     let d = secs.rem_euclid(86400.0);
-    format!("{:02}:{:02}", (d / 3600.0) as u32, ((d % 3600.0) / 60.0) as u32)
+    format!(
+        "{:02}:{:02}",
+        (d / 3600.0) as u32,
+        ((d % 3600.0) / 60.0) as u32
+    )
 }

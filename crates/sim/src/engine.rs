@@ -19,8 +19,10 @@ impl Game {
             balance.start.cash,
         );
         let mut g = Self { state, balance };
-        g.state
-            .push_log(LogKind::System, "Operation online. One account, one script, no plan.");
+        g.state.push_log(
+            LogKind::System,
+            "Operation online. One account, one script, no plan.",
+        );
         g.state.push_log(
             LogKind::Info,
             "Sell gold to buy accounts. Accounts make heat. Heat makes problems.",
@@ -83,7 +85,12 @@ impl Game {
                     if band != a.band {
                         events.push((
                             LogKind::Info,
-                            format!("{} cooled to {} (heat {:.0}).", tag(a.id), band.label(), a.heat),
+                            format!(
+                                "{} cooled to {} (heat {:.0}).",
+                                tag(a.id),
+                                band.label(),
+                                a.heat
+                            ),
                         ));
                         a.band = band;
                     }
@@ -118,7 +125,10 @@ impl Game {
             for id in &terminated {
                 events.push((
                     LogKind::Danger,
-                    format!("{} hit revocation. Terminated mid-session, no warning left to give.", tag(*id)),
+                    format!(
+                        "{} hit revocation. Terminated mid-session, no warning left to give.",
+                        tag(*id)
+                    ),
                 ));
             }
             self.state.accounts.retain(|a| !terminated.contains(&a.id));
@@ -147,8 +157,8 @@ impl Game {
 
         // market: slow random walk, bounded.
         let shock = bal.market.drift * self.state.rng.normal() * hrs.sqrt();
-        self.state.market_price =
-            (self.state.market_price * shock.exp()).clamp(bal.market.min_price, bal.market.max_price);
+        self.state.market_price = (self.state.market_price * shock.exp())
+            .clamp(bal.market.min_price, bal.market.max_price);
 
         for (kind, text) in events {
             self.state.push_log(kind, text);
@@ -344,7 +354,11 @@ impl Game {
 
     fn spend(&mut self, cost: f64, what: &str) -> Result<(), String> {
         if self.state.cash < cost {
-            return Err(format!("{what} costs ${} — you have ${}.", money(cost), money(self.state.cash)));
+            return Err(format!(
+                "{what} costs ${} — you have ${}.",
+                money(cost),
+                money(self.state.cash)
+            ));
         }
         self.state.cash -= cost;
         Ok(())
@@ -374,7 +388,11 @@ impl Game {
         self.state.slots_bought += 1;
         self.state.push_log(
             LogKind::Money,
-            format!("Rack space added for ${}. {} slots total.", money(cost), self.state.slots),
+            format!(
+                "Rack space added for ${}. {} slots total.",
+                money(cost),
+                self.state.slots
+            ),
         );
         Ok(())
     }
@@ -389,7 +407,9 @@ impl Game {
             format!(
                 "Script v{} deployed (+{:.0}% yield). They patch, we adapt.",
                 self.state.script_level + 1,
-                self.balance.upgrades.script_yield_per_level * 100.0 * self.state.script_level as f64
+                self.balance.upgrades.script_yield_per_level
+                    * 100.0
+                    * self.state.script_level as f64
             ),
         );
         Ok(())
@@ -402,7 +422,10 @@ impl Game {
         self.state.proxy_level += 1;
         self.state.push_log(
             LogKind::Money,
-            format!("Proxy pool upgraded to tier {}. Cheaper, quieter, slower.", self.state.proxy_level),
+            format!(
+                "Proxy pool upgraded to tier {}. Cheaper, quieter, slower.",
+                self.state.proxy_level
+            ),
         );
         Ok(())
     }
@@ -428,7 +451,8 @@ impl Game {
             return Err("Nothing in staging to sell.".into());
         }
         let gross = self.state.gold;
-        let hit = (gross / self.balance.market.shard_turnover).min(1.0) * self.balance.market.dump_hit;
+        let hit =
+            (gross / self.balance.market.shard_turnover).min(1.0) * self.balance.market.dump_hit;
         let price = self.state.market_price;
         let proceeds = gross * price * (1.0 - hit);
         self.state.market_price = (price * (1.0 - hit))
@@ -464,7 +488,10 @@ impl Game {
         self.state.push_log(
             LogKind::Info,
             if paused {
-                format!("{} pulled from the field. Heat decaying in 10 minutes.", tag(id))
+                format!(
+                    "{} pulled from the field. Heat decaying in 10 minutes.",
+                    tag(id)
+                )
             } else {
                 format!("{} back online.", tag(id))
             },
@@ -526,7 +553,10 @@ impl Game {
         s.sweep_pending = false;
         s.run_started_at = s.now;
         s.add_account(s.now);
-        s.push_log(LogKind::Info, "Fresh start. Same mistakes available at no extra cost.");
+        s.push_log(
+            LogKind::Info,
+            "Fresh start. Same mistakes available at no extra cost.",
+        );
         Ok(())
     }
 

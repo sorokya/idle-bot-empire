@@ -151,15 +151,17 @@ impl ViewModel {
             proxy_level: s.proxy_level,
             humanizer_level: s.humanizer_level,
             costs: Costs {
-                account: bal.accounts.cost
-                    * bal.accounts.cost_growth.powi(s.accounts.len() as i32),
+                account: bal.accounts.cost * bal.accounts.cost_growth.powi(s.accounts.len() as i32),
                 slot: bal.slots.base_cost * bal.slots.cost_growth.powi(s.slots_bought as i32),
                 script: bal.upgrades.script_base_cost
                     * bal.upgrades.script_cost_growth.powi(s.script_level as i32),
                 proxy: bal.upgrades.proxy_base_cost
                     * bal.upgrades.proxy_cost_growth.powi(s.proxy_level as i32),
                 humanizer: bal.upgrades.humanizer_base_cost
-                    * bal.upgrades.humanizer_cost_growth.powi(s.humanizer_level as i32),
+                    * bal
+                        .upgrades
+                        .humanizer_cost_growth
+                        .powi(s.humanizer_level as i32),
             },
             tier: s.tier,
             contacts: s.contacts,

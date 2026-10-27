@@ -52,9 +52,7 @@ pub fn decide(g: &mut Game) {
     if g.state.cash > g.slot_cost() * 1.5 && g.state.accounts.len() >= g.state.slots as usize {
         let _ = g.dispatch("buy_slot");
     }
-    if g.state.cash > g.account_cost() * 1.2
-        && (g.state.accounts.len() as u32) < g.state.slots
-    {
+    if g.state.cash > g.account_cost() * 1.2 && (g.state.accounts.len() as u32) < g.state.slots {
         let _ = g.dispatch("buy_account");
     }
 
