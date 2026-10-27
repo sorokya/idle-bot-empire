@@ -76,6 +76,10 @@ jobs:
         working-directory: web
         run: pnpm lint
 
+      - name: Typecheck
+        working-directory: web
+        run: pnpm typecheck
+
       - name: Build
         working-directory: web
         run: pnpm build

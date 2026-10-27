@@ -3,63 +3,72 @@
 //!
 //! cargo run --example run -- 6
 
-use ibe_sim::engine::contacts_preview;
-use ibe_sim::{harness, Game, LogKind};
+use ibe_sim::{contacts_preview, harness, Game, LogKind};
 
 fn main() {
     let hours: f64 = std::env::args()
         .nth(1)
-        .and_then(|s| s.parse().ok())
+        .and_then(|value| value.parse().ok())
         .unwrap_or(6.0);
     let seed: u64 = std::env::args()
         .nth(2)
-        .and_then(|s| s.parse().ok())
+        .and_then(|value| value.parse().ok())
         .unwrap_or(7);
 
-    let mut g = Game::new(seed);
-    let played = harness::autoplay(&mut g, hours * 3600.0);
+    let mut game = Game::new(seed);
+    let played = harness::autoplay(&mut game, hours * 3600.0);
 
     println!("\n================ LOG ================");
-    for e in &g.state.log {
-        let kind = match e.kind {
+    for entry in &game.state.log {
+        let kind = match entry.kind {
             LogKind::Money => "$",
             LogKind::Warn => "!",
             LogKind::Danger => "!!",
             LogKind::System => "*",
             LogKind::Info => " ",
         };
-        println!("D{} {:>5} [{}] {}", day(e.at), hhmm(e.at), kind, e.text);
+        println!(
+            "D{} {:>5} [{}] {}",
+            format_day(entry.at),
+            format_clock(entry.at),
+            kind,
+            entry.text
+        );
     }
 
-    let v = g.view();
+    let view = game.view();
     println!("\n============== SUMMARY ==============");
     println!("played        {:.2}h", played / 3600.0);
-    println!("accounts      {} / {} slots", v.accounts.len(), v.capacity);
-    println!("gold staged   {:.0}", v.gold);
+    println!(
+        "accounts      {} / {} slots",
+        view.accounts.len(),
+        view.capacity
+    );
+    println!("gold staged   {:.0}", view.gold);
     println!(
         "cash          ${:.2}  (run total ${:.2})",
-        v.cash, g.state.run_cash
+        view.cash, game.state.run_cash
     );
-    println!("exposure      {:.0} / {:.0}", v.exposure, v.ceiling);
+    println!("exposure      {:.0} / {:.0}", view.exposure, view.ceiling);
     println!(
         "tier {}  contacts {}  pending {}",
-        v.tier,
-        v.contacts,
-        contacts_preview(&g.state, &g.balance)
+        view.tier,
+        view.contacts,
+        contacts_preview(&game.state, &game.balance)
     );
-    println!("banned total  {}", v.banned_total);
-    println!("run over      {}", v.over);
+    println!("banned total  {}", view.banned_total);
+    println!("run over      {}", view.over);
 }
 
-fn day(secs: f64) -> u32 {
-    1 + (secs / 86400.0) as u32
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+fn format_day(seconds: f64) -> u32 {
+    1 + (seconds / 86400.0) as u32
 }
 
-fn hhmm(secs: f64) -> String {
-    let d = secs.rem_euclid(86400.0);
-    format!(
-        "{:02}:{:02}",
-        (d / 3600.0) as u32,
-        ((d % 3600.0) / 60.0) as u32
-    )
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+fn format_clock(seconds: f64) -> String {
+    let in_day = seconds.rem_euclid(86400.0);
+    let hours = (in_day / 3600.0) as u32;
+    let minutes = ((in_day % 3600.0) / 60.0) as u32;
+    format!("{hours:02}:{minutes:02}")
 }

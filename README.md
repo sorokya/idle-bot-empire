@@ -10,7 +10,7 @@ A text-first idle game about running a gold-farming bot empire inside a fictiona
 docs/design.md  # the design document
 crates/sim/     # the game. No I/O, no clock, no unseeded randomness.
   balance.toml  # every tunable number
-crates/wasm/    # wasm-bindgen boundary (~60 lines)
+crates/wasm/    # thin wasm-bindgen boundary
 web/            # Vite + Preact + TypeScript. Dumb view layer.
 ```
 
@@ -36,7 +36,8 @@ cd ../../web && pnpm install && pnpm dev
    live play run the same code path.
 2. The RNG is PCG32 with its state inside the save, so a reload replays identically.
 3. The UI reads a flat `ViewModel`; it never touches `State`.
-4. Every number lives in `balance.toml`, not in code.
+4. Economy tunables live in `balance.toml`. A few behavioral constants remain in
+   engine code.
 5. Time advances in fixed 1s ticks, accumulated — a 12h catch-up is 43,200 cheap iterations.
 
 ## Controls
@@ -46,8 +47,10 @@ After that: `1`–`6` buy · `[` `]` aggression · `p` new identity · click an 
 
 ## Workflow
 
-`cargo fmt --all` and `pnpm lint` run on pre-commit; `cargo clippy --workspace --all-targets -- -D warnings`
-runs on pre-push (lefthook). CI mirrors all three plus `cargo test` and the wasm build.
+`cargo fmt --all` and `pnpm lint` run on pre-commit; `cargo clippy --workspace
+--all-targets -- -D warnings` and `cargo test --workspace` run on pre-push
+(lefthook). CI mirrors all of these plus `pnpm typecheck`, `pnpm build`, and the
+wasm build.
 
 ## Where the design doc and the code disagree
 

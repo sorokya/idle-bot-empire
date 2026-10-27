@@ -2,30 +2,29 @@
 //! These are intentionally loose bands — they catch a broken curve, not a
 //! two-percent drift.
 
-use ibe_sim::engine::contacts_preview;
-use ibe_sim::{harness, Game};
+use ibe_sim::{contacts_preview, harness, Command, Game};
 
 #[test]
 fn first_run_ends_in_a_reasonable_window() {
-    let mut g = Game::new(7);
-    let played = harness::autoplay(&mut g, 8.0 * 3600.0);
-    let hrs = played / 3600.0;
+    let mut game = Game::new(7);
+    let played = harness::autoplay(&mut game, 8.0 * 3600.0);
+    let hours = played / 3600.0;
 
     assert!(
-        g.state.over,
-        "first run should end within 8h, played {hrs:.2}h"
+        game.state.over,
+        "first run should end within 8h, played {hours:.2}h"
     );
     assert!(
-        (2.0..=5.0).contains(&hrs),
-        "first run should land in 2-5h, took {hrs:.2}h"
+        (2.0..=5.0).contains(&hours),
+        "first run should land in 2-5h, took {hours:.2}h"
     );
 }
 
 #[test]
 fn first_prestige_pays_a_meaningful_amount() {
-    let mut g = Game::new(7);
-    harness::autoplay(&mut g, 8.0 * 3600.0);
-    let gain = contacts_preview(&g.state, &g.balance);
+    let mut game = Game::new(7);
+    harness::autoplay(&mut game, 8.0 * 3600.0);
+    let gain = contacts_preview(&game.state, &game.balance);
     assert!(
         gain >= 2,
         "first run should pay at least 2 contacts, paid {gain}"
@@ -38,10 +37,10 @@ fn first_prestige_pays_a_meaningful_amount() {
 
 #[test]
 fn run_two_is_faster_than_run_one() {
-    let mut g = Game::new(7);
-    let first = harness::autoplay(&mut g, 8.0 * 3600.0);
-    g.prestige().expect("prestige after sweep");
-    let second = harness::autoplay(&mut g, 8.0 * 3600.0);
+    let mut game = Game::new(7);
+    let first = harness::autoplay(&mut game, 8.0 * 3600.0);
+    game.prestige().expect("prestige after sweep");
+    let second = harness::autoplay(&mut game, 8.0 * 3600.0);
 
     // Hybrid design: runs are allowed to stretch, but they must pay better.
     assert!(
@@ -51,47 +50,52 @@ fn run_two_is_faster_than_run_one() {
         first / 3600.0
     );
     assert!(
-        g.state.over,
+        game.state.over,
         "run two should end within 8h (tier {}, exposure {:.0}/{:.0})",
-        g.state.tier,
-        g.state.exposure,
-        g.balance.exposure_ceiling(g.state.tier)
+        game.state.tier,
+        game.state.exposure,
+        game.balance.exposure_ceiling(game.state.tier)
     );
-    assert_eq!(g.state.tier, 1, "exactly one prestige should have happened");
+    assert_eq!(
+        game.state.tier, 1,
+        "exactly one prestige should have happened"
+    );
     assert!(
-        g.state.contacts >= 4,
+        game.state.contacts >= 4,
         "second run should accumulate contacts, have {}",
-        g.state.contacts
+        game.state.contacts
     );
 }
 
 #[test]
 fn time_to_next_purchase_stays_in_band_early() {
     // Sample every minute: how often is the player able to buy *something*?
-    let mut g = Game::new(9);
+    let mut game = Game::new(9);
     let mut dry_minutes = 0;
     let mut worst_dry = 0;
 
     for _ in 0..240 {
-        g.tick(60.0);
+        game.tick(60.0);
         {
-            let cheapest = g.account_cost().min(g.script_cost());
-            let can = g.state.cash >= cheapest;
-            if can {
+            let cheapest = game.account_cost().min(game.script_cost());
+            let can_buy = game.state.cash >= cheapest;
+            if can_buy {
                 dry_minutes = 0;
             } else {
                 dry_minutes += 1;
                 worst_dry = worst_dry.max(dry_minutes);
             }
         }
-        if g.state.gold > 2500.0 {
-            let _ = g.dispatch("sell");
+        if game.state.gold > 2500.0 {
+            let _ = game.dispatch(Command::Sell);
         }
-        if g.state.cash > g.account_cost() && (g.state.accounts.len() as u32) < g.state.slots {
-            let _ = g.dispatch("buy_account");
+        if game.state.cash > game.account_cost()
+            && game.state.accounts.len() < usize::try_from(game.state.slots).unwrap_or(usize::MAX)
+        {
+            let _ = game.dispatch(Command::BuyAccount);
         }
-        if g.state.cash > g.script_cost() * 2.0 {
-            let _ = g.dispatch("upgrade:script");
+        if game.state.cash > game.script_cost() * 2.0 {
+            let _ = game.dispatch(Command::Upgrade(ibe_sim::Upgrade::Script));
         }
     }
 

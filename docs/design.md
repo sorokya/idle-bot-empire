@@ -5,7 +5,7 @@
 
 **Status:** playable vertical slice. Design sections marked *(planned)* are not built yet.
 **Code:** [sorokya/idle-bot-empire](https://github.com/sorokya/idle-bot-empire) — see `README.md` to run it.
-**Balance:** every number quoted here lives in [`crates/sim/balance.toml`](../crates/sim/balance.toml), which is authoritative.
+**Balance:** economy tunables live in [`crates/sim/balance.toml`](../crates/sim/balance.toml); a few behavioral constants remain in engine code.
 
 ---
 
@@ -16,7 +16,7 @@ Shipped and verified:
 - Manual phase → first bot → accounts → gold → sell → cash → slots / scripts / proxies / humanizer
 - Heat tiers with warnings, pause/burn recovery, instant termination at 100 heat
 - Queued sweep at the exposure ceiling → Contacts → new identity with a permanent yield multiplier
-- 12h offline accrual, deterministic saves, 12 Rust tests, Preact UI
+- 12h offline accrual, deterministic saves, 14 Rust tests, Preact UI
 
 Built but thin: one shard, one zone, no buyers, no rivals, no laundry.
 
@@ -292,8 +292,8 @@ Every figure above is the real thing: the sell button quotes the payout, the agg
 The simulation is **pure and renderer-agnostic**:
 
 ```rust
-fn advance(state: &mut State, dt_secs: f64);   // pure, deterministic, seeded RNG
-fn view(state: &State) -> ViewModel;           // flat, render-ready
+game.tick(delta_seconds);          // pure, deterministic, seeded RNG
+let view = game.view();            // flat, render-ready
 ```
 
 ```
@@ -301,7 +301,7 @@ idle-bot-empire/
 ├── crates/
 │   ├── sim/            # zero-I/O: state, advance, heat, sweep, contacts
 │   │   └── balance.toml
-│   └── wasm/           # thin wasm-bindgen boundary (~60 lines)
+│   └── wasm/           # thin wasm-bindgen boundary
 └── web/                # Vite + Preact + TypeScript. Dumb view layer.
 ```
 

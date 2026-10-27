@@ -3,41 +3,44 @@ use serde::{Deserialize, Serialize};
 /// PCG32 — small, fast, seedable. Its whole state is in the save file, so a
 /// reload replays identically and any bug is reproducible from a save.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Pcg32 {
-    pub state: u64,
-    pub inc: u64,
+pub(crate) struct Pcg32 {
+    pub(crate) state: u64,
+    pub(crate) inc: u64,
 }
 
 impl Pcg32 {
-    pub fn new(seed: u64) -> Self {
-        let mut r = Self {
+    pub(crate) fn new(seed: u64) -> Self {
+        let mut rng = Self {
             state: 0,
             inc: (seed << 1) | 1,
         };
-        r.next_u32();
-        r.state = r.state.wrapping_add(seed);
-        r.next_u32();
-        r
+        rng.next_u32();
+        rng.state = rng.state.wrapping_add(seed);
+        rng.next_u32();
+        rng
     }
 
-    pub fn next_u32(&mut self) -> u32 {
+    #[allow(clippy::cast_possible_truncation)]
+    pub(crate) fn next_u32(&mut self) -> u32 {
         let old = self.state;
-        self.state = old.wrapping_mul(6364136223846793005).wrapping_add(self.inc);
+        self.state = old
+            .wrapping_mul(6_364_136_223_846_793_005)
+            .wrapping_add(self.inc);
         let xorshifted = (((old >> 18) ^ old) >> 27) as u32;
-        let rot = (old >> 59) as u32;
-        xorshifted.rotate_right(rot)
+        let rotation = (old >> 59) as u32;
+        xorshifted.rotate_right(rotation)
     }
 
-    /// Uniform in [0, 1).
-    pub fn f64(&mut self) -> f64 {
-        (self.next_u32() as f64) / (u32::MAX as f64 + 1.0)
+    /// Uniform in `[0, 1)`.
+    pub(crate) fn f64(&mut self) -> f64 {
+        f64::from(self.next_u32()) / (f64::from(u32::MAX) + 1.0)
     }
 
-    /// Approximately normal, mean 0, sd 1 (sum of uniforms).
-    pub fn normal(&mut self) -> f64 {
-        let a = self.f64();
-        let b = self.f64();
-        let c = self.f64();
-        ((a + b + c) - 1.5) * 2.0
+    /// Approximately normal, mean 0, standard deviation 1 (sum of uniforms).
+    pub(crate) fn normal(&mut self) -> f64 {
+        let first = self.f64();
+        let second = self.f64();
+        let third = self.f64();
+        ((first + second + third) - 1.5) * 2.0
     }
 }

@@ -15,3 +15,6 @@ pre-push:
   jobs:
     - name: cargo clippy
       run: cargo clippy --workspace --all-targets -- -D warnings
+
+    - name: cargo test
+      run: cargo test --workspace

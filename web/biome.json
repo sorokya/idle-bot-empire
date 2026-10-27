@@ -17,6 +17,13 @@
     "enabled": true,
     "rules": {
       "preset": "recommended",
+      "correctness": {
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "error"
+      },
       "style": {
         "noParameterAssign": "error",
         "useAsConstAssertion": "error",
@@ -29,7 +36,8 @@
         "noInferrableTypes": "error",
         "noUselessElse": "error",
         "noDescendingSpecificity": "off",
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "error",
+        "useConst": "error"
       }
     }
   },
