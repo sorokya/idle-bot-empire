@@ -65,7 +65,7 @@ let suppressSave = false;
 // ---------------------------------------------------------------- helpers
 
 function n(v: number): string {
-  if (!isFinite(v)) return "0";
+  if (!Number.isFinite(v)) return "0";
   if (v < 1000) return Math.floor(v).toString();
   const units = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx"];
   let i = 0;
@@ -98,8 +98,12 @@ function dur(secs: number): string {
 }
 
 function esc(s: string): string {
-  return s.replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string
+  return s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ] as string,
   );
 }
 
@@ -229,7 +233,8 @@ function bindInput() {
 function render() {
   const v = view;
   const exposurePct = Math.min(100, (v.exposure / v.ceiling) * 100);
-  const exposureClass = exposurePct > 80 ? "danger" : exposurePct > 55 ? "warn" : "";
+  const exposureClass =
+    exposurePct > 80 ? "danger" : exposurePct > 55 ? "warn" : "";
   const eta = v.sweep_eta_hours;
 
   const cmds = [
@@ -238,14 +243,16 @@ function render() {
       cmd: "buy_account",
       label: "Acquire account",
       cost: v.costs.account,
-      enabled: v.cash >= v.costs.account && v.accounts.length < v.capacity && !v.over,
+      enabled:
+        v.cash >= v.costs.account && v.accounts.length < v.capacity && !v.over,
     },
     {
       key: "2",
       cmd: "buy_slot",
       label: "Add rack space",
       cost: v.costs.slot,
-      enabled: v.cash >= v.costs.slot && v.accounts.length >= v.capacity && !v.over,
+      enabled:
+        v.cash >= v.costs.slot && v.accounts.length >= v.capacity && !v.over,
     },
     {
       key: "3",
@@ -279,13 +286,14 @@ function render() {
 
   const accounts = v.accounts
     .map((a) => {
-      const bandClass = a.band === "quiet" ? "" : a.band === "imminent" ? "danger" : "warn";
+      const bandClass =
+        a.band === "quiet" ? "" : a.band === "imminent" ? "danger" : "warn";
       return `<div class="acct">
         <span class="tag">${esc(a.tag)}</span>
         <span class="heat ${bandClass}"><i style="width:${Math.min(100, a.heat)}%"></i></span>
         <span class="band ${bandClass}">${a.band}</span>
         <span>lv${a.level}</span>
-        <span class="yield">${a.paused ? "— paused —" : n(a.yield_per_hr) + " g/hr"}</span>
+        <span class="yield">${a.paused ? "— paused —" : `${n(a.yield_per_hr)} g/hr`}</span>
         <button data-cmd="pause:${a.id}">${a.paused ? "resume" : "pause"}</button>
         <button data-cmd="burn:${a.id}">burn</button>
       </div>`;
@@ -295,7 +303,7 @@ function render() {
   const log = v.log
     .map(
       (l) =>
-        `<div class="kind-${l.kind.toLowerCase()}"><span class="t">${esc(l.clock)}</span><span class="m">${esc(l.text)}</span></div>`
+        `<div class="kind-${l.kind.toLowerCase()}"><span class="t">${esc(l.clock)}</span><span class="m">${esc(l.text)}</span></div>`,
     )
     .join("");
 
@@ -332,10 +340,12 @@ function render() {
       <div class="cmdgrid">
         ${cmds
           .map(
-            (c) => `<button class="cmd" data-cmd="${c.cmd}" ${c.enabled ? "" : "disabled"}>
+            (
+              c,
+            ) => `<button class="cmd" data-cmd="${c.cmd}" ${c.enabled ? "" : "disabled"}>
               <span class="key">${c.key}</span><span>${esc(c.label)}</span>
               ${c.cost === null ? "" : `<span class="cost">${money(c.cost)}</span>`}
-            </button>`
+            </button>`,
           )
           .join("")}
       </div>
@@ -388,7 +398,9 @@ function overlay(v: View): string {
 
 boot().then(() => {
   if (awaySecs > 60) {
-    toast(`While you were away ${dur(awaySecs)}: ${n(view.gold)} gold, ${money(view.cash)} on hand.`);
+    toast(
+      `While you were away ${dur(awaySecs)}: ${n(view.gold)} gold, ${money(view.cash)} on hand.`,
+    );
     awaySecs = 0;
   }
 });
