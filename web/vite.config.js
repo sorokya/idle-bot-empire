@@ -1,0 +1,17 @@
+import path from 'node:path';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
+  build: {
+    sourcemap: true,
+  },
+  server: {
+    port: 3000,
+  },
+});

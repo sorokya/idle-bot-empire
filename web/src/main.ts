@@ -1,5 +1,5 @@
-import init, { IbeGame } from "./wasm/ibe_wasm.js";
-import "./style.css";
+import init, { IbeGame } from './wasm/ibe_wasm.js';
+import './style.css';
 
 interface AccountView {
   id: number;
@@ -53,8 +53,8 @@ interface View {
   log: LogView[];
 }
 
-const SAVE_KEY = "idle-bot-empire/save/v1";
-const app = document.querySelector<HTMLDivElement>("#app")!;
+const SAVE_KEY = 'idle-bot-empire/save/v1';
+const app = document.querySelector<HTMLDivElement>('#app')!;
 
 let game: IbeGame;
 let view: View;
@@ -64,10 +64,11 @@ let suppressSave = false;
 
 // ---------------------------------------------------------------- helpers
 
-function n(v: number): string {
-  if (!Number.isFinite(v)) return "0";
+function n(input: number): string {
+  let v = input;
+  if (!Number.isFinite(v)) return '0';
   if (v < 1000) return Math.floor(v).toString();
-  const units = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx"];
+  const units = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx'];
   let i = 0;
   while (v >= 1000 && i < units.length - 1) {
     v /= 1000;
@@ -79,8 +80,8 @@ function n(v: number): string {
 
 function money(v: number): string {
   return (
-    "$" +
-    v.toLocaleString("en-US", {
+    '$' +
+    v.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })
@@ -101,7 +102,7 @@ function esc(s: string): string {
   return s.replace(
     /[&<>"']/g,
     (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[
         c
       ] as string,
   );
@@ -109,16 +110,16 @@ function esc(s: string): string {
 
 let toastTimer: number | undefined;
 function toast(msg: string) {
-  let el = document.querySelector<HTMLDivElement>(".toast");
+  let el = document.querySelector<HTMLDivElement>('.toast');
   if (!el) {
-    el = document.createElement("div");
-    el.className = "toast";
+    el = document.createElement('div');
+    el.className = 'toast';
     document.body.appendChild(el);
   }
   el.textContent = msg;
-  el.classList.add("show");
+  el.classList.add('show');
   window.clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => el?.classList.remove("show"), 2600);
+  toastTimer = window.setTimeout(() => el?.classList.remove('show'), 2600);
 }
 
 // ------------------------------------------------------------------ boot
@@ -131,7 +132,7 @@ async function boot() {
     try {
       game = IbeGame.loadSave(raw, Date.now() / 1000);
     } catch (e) {
-      console.warn("save failed to load, starting fresh", e);
+      console.warn('save failed to load, starting fresh', e);
       game = new IbeGame(Date.now() % 1_000_000);
     }
   } else {
@@ -144,8 +145,8 @@ async function boot() {
   lastMs = Date.now();
   window.setInterval(tick, 250);
   window.setInterval(save, 5000);
-  window.addEventListener("pagehide", save);
-  document.addEventListener("visibilitychange", () => {
+  window.addEventListener('pagehide', save);
+  document.addEventListener('visibilitychange', () => {
     if (document.hidden) save();
   });
 
@@ -200,25 +201,25 @@ function exec(cmd: string) {
 // ----------------------------------------------------------------- input
 
 function bindInput() {
-  document.addEventListener("click", (e) => {
-    const el = (e.target as HTMLElement).closest<HTMLElement>("[data-cmd]");
+  document.addEventListener('click', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-cmd]');
     if (!el || (el as HTMLButtonElement).disabled) return;
     exec(el.dataset.cmd!);
   });
 
-  document.addEventListener("keydown", (e) => {
+  document.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     const map: Record<string, string> = {
-      "1": "buy_account",
-      "2": "buy_slot",
-      "3": "sell",
-      "4": "upgrade:script",
-      "5": "upgrade:proxy",
-      "6": "upgrade:humanizer",
-      p: "prestige",
-      f: "face_sweep",
-      "[": `aggression:${(view.aggression - 0.1).toFixed(1)}`,
-      "]": `aggression:${(view.aggression + 0.1).toFixed(1)}`,
+      '1': 'buy_account',
+      '2': 'buy_slot',
+      '3': 'sell',
+      '4': 'upgrade:script',
+      '5': 'upgrade:proxy',
+      '6': 'upgrade:humanizer',
+      p: 'prestige',
+      f: 'face_sweep',
+      '[': `aggression:${(view.aggression - 0.1).toFixed(1)}`,
+      ']': `aggression:${(view.aggression + 0.1).toFixed(1)}`,
     };
     const cmd = map[e.key.toLowerCase()];
     if (cmd) {
@@ -234,50 +235,50 @@ function render() {
   const v = view;
   const exposurePct = Math.min(100, (v.exposure / v.ceiling) * 100);
   const exposureClass =
-    exposurePct > 80 ? "danger" : exposurePct > 55 ? "warn" : "";
+    exposurePct > 80 ? 'danger' : exposurePct > 55 ? 'warn' : '';
   const eta = v.sweep_eta_hours;
 
   const cmds = [
     {
-      key: "1",
-      cmd: "buy_account",
-      label: "Acquire account",
+      key: '1',
+      cmd: 'buy_account',
+      label: 'Acquire account',
       cost: v.costs.account,
       enabled:
         v.cash >= v.costs.account && v.accounts.length < v.capacity && !v.over,
     },
     {
-      key: "2",
-      cmd: "buy_slot",
-      label: "Add rack space",
+      key: '2',
+      cmd: 'buy_slot',
+      label: 'Add rack space',
       cost: v.costs.slot,
       enabled:
         v.cash >= v.costs.slot && v.accounts.length >= v.capacity && !v.over,
     },
     {
-      key: "3",
-      cmd: "sell",
+      key: '3',
+      cmd: 'sell',
       label: `Sell ${n(v.gold)} gold @ $${v.market_price.toFixed(4)}`,
       cost: null as number | null,
       enabled: v.gold >= 1 && !v.over,
     },
     {
-      key: "4",
-      cmd: "upgrade:script",
+      key: '4',
+      cmd: 'upgrade:script',
       label: `Script v${v.script_level + 2}`,
       cost: v.costs.script,
       enabled: v.cash >= v.costs.script && !v.over,
     },
     {
-      key: "5",
-      cmd: "upgrade:proxy",
+      key: '5',
+      cmd: 'upgrade:proxy',
       label: `Proxy pool t${v.proxy_level + 1}`,
       cost: v.costs.proxy,
       enabled: v.cash >= v.costs.proxy && !v.over,
     },
     {
-      key: "6",
-      cmd: "upgrade:humanizer",
+      key: '6',
+      cmd: 'upgrade:humanizer',
       label: `Humanizer t${v.humanizer_level + 1}`,
       cost: v.costs.humanizer,
       enabled: v.cash >= v.costs.humanizer && !v.over,
@@ -287,25 +288,25 @@ function render() {
   const accounts = v.accounts
     .map((a) => {
       const bandClass =
-        a.band === "quiet" ? "" : a.band === "imminent" ? "danger" : "warn";
+        a.band === 'quiet' ? '' : a.band === 'imminent' ? 'danger' : 'warn';
       return `<div class="acct">
         <span class="tag">${esc(a.tag)}</span>
         <span class="heat ${bandClass}"><i style="width:${Math.min(100, a.heat)}%"></i></span>
         <span class="band ${bandClass}">${a.band}</span>
         <span>lv${a.level}</span>
-        <span class="yield">${a.paused ? "— paused —" : `${n(a.yield_per_hr)} g/hr`}</span>
-        <button data-cmd="pause:${a.id}">${a.paused ? "resume" : "pause"}</button>
+        <span class="yield">${a.paused ? '— paused —' : `${n(a.yield_per_hr)} g/hr`}</span>
+        <button data-cmd="pause:${a.id}">${a.paused ? 'resume' : 'pause'}</button>
         <button data-cmd="burn:${a.id}">burn</button>
       </div>`;
     })
-    .join("");
+    .join('');
 
   const log = v.log
     .map(
       (l) =>
         `<div class="kind-${l.kind.toLowerCase()}"><span class="t">${esc(l.clock)}</span><span class="m">${esc(l.text)}</span></div>`,
     )
-    .join("");
+    .join('');
 
   app.innerHTML = `
     <div class="frame">
@@ -333,7 +334,7 @@ function render() {
       <div class="exposure">
         <div class="row">
           <span>Exposure ${Math.floor(exposurePct)}%</span>
-          <span>${eta === null || eta === undefined ? "sweep pending" : `next sweep ~${dur(eta * 3600)}`}</span>
+          <span>${eta === null || eta === undefined ? 'sweep pending' : `next sweep ~${dur(eta * 3600)}`}</span>
         </div>
         <div class="bar ${exposureClass}"><i style="width:${exposurePct}%"></i></div>
       </div>
@@ -342,18 +343,18 @@ function render() {
           .map(
             (
               c,
-            ) => `<button class="cmd" data-cmd="${c.cmd}" ${c.enabled ? "" : "disabled"}>
+            ) => `<button class="cmd" data-cmd="${c.cmd}" ${c.enabled ? '' : 'disabled'}>
               <span class="key">${c.key}</span><span>${esc(c.label)}</span>
-              ${c.cost === null ? "" : `<span class="cost">${money(c.cost)}</span>`}
+              ${c.cost === null ? '' : `<span class="cost">${money(c.cost)}</span>`}
             </button>`,
           )
-          .join("")}
+          .join('')}
       </div>
       <div class="cmdgrid">
-        <button class="cmd" data-cmd="aggression:${(v.aggression - 0.1).toFixed(1)}" ${v.over ? "disabled" : ""}>
+        <button class="cmd" data-cmd="aggression:${(v.aggression - 0.1).toFixed(1)}" ${v.over ? 'disabled' : ''}>
           <span class="key">[</span><span>Less aggressive</span><span class="cost">${v.aggression.toFixed(1)}x</span>
         </button>
-        <button class="cmd" data-cmd="aggression:${(v.aggression + 0.1).toFixed(1)}" ${v.over ? "disabled" : ""}>
+        <button class="cmd" data-cmd="aggression:${(v.aggression + 0.1).toFixed(1)}" ${v.over ? 'disabled' : ''}>
           <span class="key">]</span><span>More aggressive</span><span class="cost">${v.aggression.toFixed(1)}x</span>
         </button>
       </div>
@@ -384,7 +385,7 @@ function overlay(v: View): string {
       </div>
     </div>`;
   }
-  if (!v.over) return "";
+  if (!v.over) return '';
   return `<div class="overlay">
     <div class="modal">
       <h3>Run terminated</h3>
