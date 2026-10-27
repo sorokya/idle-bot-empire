@@ -1,11 +1,13 @@
 # Idle Bot Empire
 
 A text-first idle game about running a gold-farming bot empire inside a fictional MMORPG.
-Design doc: `~/vault/20. Goals & Projects/Projects/Idle Bot Empire.md`
+
+**Design doc:** [`docs/design.md`](docs/design.md) — thesis, core loop, heat/sweep rules, shipped numbers.
 
 ## Layout
 
 ```
+docs/design.md  # the design document
 crates/sim/     # the game. No I/O, no clock, no unseeded randomness.
   balance.toml  # every tunable number
 crates/wasm/    # wasm-bindgen boundary (~60 lines)
